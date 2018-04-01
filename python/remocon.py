@@ -200,7 +200,7 @@ while True:
            #print("trans_start")
            block2 = sys.argv[2]
            #print(block2)
-           write_command(memo_no,block2)
+           trans_command(block2)
            break   
 
     print("end")
