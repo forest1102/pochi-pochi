@@ -119,15 +119,18 @@ app
   })
   .put('/request',(req,res)=>{
     const action=req.query
+    let code:string
     if(action===null){
       return
     }
     if('code' in action){
-      IRCode.execCode(action['code'])
+      code=action['code']
     }
     else if('phrase' in action){
-      IRCode.execCode(codes.find(action['phrase']))
+      code=codes.find(action['phrase'])
     }
+    IRCode.execCode(code)
+    return res.send(code)
   })
 // 
 // .post('/code',(req,res)=>{
