@@ -99,7 +99,7 @@ app
   })
 
   .get('/code-from/:memo_no',(req,res)=>{
-    const memo_no:number=req.params.memo_no
+    const memo_no=+req.params.memo_no
     return IRCode.codeFrom(memo_no)
       .then(result => {
         console.log(result)
