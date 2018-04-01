@@ -58,11 +58,11 @@ class IRCode {
         .then(code=>{
           this.code=code
         })
-        
     }
-    if(typeof codeOrNum==='string'){
+    else if(typeof codeOrNum==='string'){
       this.code=codeOrNum
     }
+    console.log('this.code:',this.code)
   }
   
   execCode(){
@@ -120,7 +120,7 @@ app
   })
 
   .put('/addcode-from/:id',(req,res)=> {
-    const phrase=req.query.phrase,
+    const phrase=String(req.query.phrase),
       memo_no=+req.params.id,
       ir=new IRCode(phrase,memo_no)
     console.log(phrase,memo_no)
