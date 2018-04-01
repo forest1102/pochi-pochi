@@ -43,7 +43,7 @@ class IRCode {
   phrase:string
   
   static codeFrom(memo_no:number):Promise<string>{
-    return exec(`python ../python/remocon.py r ${memo_no}`)
+    return exec(`python python/remocon.py r ${memo_no}`)
       .then(({stdout,stderr}:{stdout:string,stderr:string})=>{
         return new Promise<string>((resolve,reject)=>{
           resolve(stdout) 
