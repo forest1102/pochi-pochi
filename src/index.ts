@@ -123,6 +123,7 @@ app
     const phrase=req.query.phrase,
       memo_no=+req.params.id,
       ir=new IRCode(phrase,memo_no)
+    console.log(phrase,memo_no)
     return codesRef
       .update(ir.zipped)
       .then(()=> res.send(ir.zipped))
