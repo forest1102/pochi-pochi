@@ -101,7 +101,7 @@ app
   )
   
   .put('/addcode',(req,res)=>{
-    const {phrase,code}:{phrase:string,code:number}=req.query
+    const {phrase,code}=req.query
     const irCode=new IRCode(phrase,code)
     return codesRef
       .update(irCode.zipped)
