@@ -120,7 +120,7 @@ app
   })
 
   .put('/addcode-from/:id',(req,res)=> {
-    const phrase:string=req.query.phrase,
+    const phrase=req.query.phrase,
       memo_no=+req.params.id,
       ir=new IRCode(phrase,memo_no)
     return codesRef
