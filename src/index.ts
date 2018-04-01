@@ -44,11 +44,11 @@ class IRCode {
   
   static codeFrom(memo_no:number):Promise<string>{
     return exec(`python python/remocon.py r ${memo_no}`)
-      .then(({stdout,stderr}:{stdout:string,stderr:string})=>{
-        return new Promise<string>((resolve,reject)=>{
+      .then(({stdout,stderr}:{stdout:string,stderr:string})=>
+        new Promise<string>((resolve,reject)=>{
           resolve(stdout) 
         })
-      })
+      )
   }
   
   constructor(_phrase:string,codeOrNum?:number|string){
@@ -58,6 +58,7 @@ class IRCode {
         .then(code=>{
           this.code=code
         })
+        
     }
     if(typeof codeOrNum==='string'){
       this.code=codeOrNum
@@ -65,11 +66,22 @@ class IRCode {
   }
   
   execCode(){
-    console.log(`${this.code} was transed`)
+    console.log(`${this.code} is transed`)
+    return exec(`python python/remocon.py t ${this.code}`)
+      .then(({stdout,stderr}:{stdout:string,stderr:string})=>
+        new Promise<string>((resolve,reject)=>{
+          resolve(stdout) 
+        })
+      )
   }
   static execCode(code:string){
-    // TODO: trans_command
-    console.log(code,'was transed')
+    console.log(`${code} is transed`)
+    return exec(`python python/remocon.py t ${code}`)
+      .then(({stdout,stderr}:{stdout:string,stderr:string})=>
+        new Promise<string>((resolve,reject)=>{
+          resolve(stdout) 
+        })
+    )
   }
   get zipped(){
     return {[this.phrase]:this.code}
