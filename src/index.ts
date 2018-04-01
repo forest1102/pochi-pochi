@@ -1,5 +1,6 @@
 import * as path from 'path'
 import * as express from 'express'
+import {execSync} from 'child_process'
 import {exec,spawn} from 'child-process-promise'
 import * as admin from 'firebase-admin'
 const serviceAccount = require('../config/pochi-pochi-firebase-adminsdk-eplb1-cbfc364ec8.json')
@@ -42,22 +43,14 @@ class IRCode {
   code:string
   phrase:string
   
-  static codeFrom(memo_no:number):Promise<string>{
-    return exec(`python python/remocon.py r ${memo_no}`)
-      .then(({stdout,stderr}:{stdout:string,stderr:string})=>
-        new Promise<string>((resolve,reject)=>{
-          resolve(stdout) 
-        })
-      )
+  static codeFrom(memo_no:number):string{
+    return execSync(`python python/remocon.py r ${memo_no}`).toString()
   }
   
   constructor(_phrase:string,codeOrNum?:number|string){
     this.phrase=_phrase
     if(typeof codeOrNum==='number'){
-      IRCode.codeFrom(codeOrNum)
-        .then(code=>{
-          this.code=code
-        })
+      this.code=IRCode.codeFrom(codeOrNum)
     }
     else if(typeof codeOrNum==='string'){
       this.code=codeOrNum
@@ -72,7 +65,7 @@ class IRCode {
         new Promise<string>((resolve,reject)=>{
           resolve(stdout) 
         })
-      )
+    )
   }
   static execCode(code:string){
     console.log(`${code} is transed`)
@@ -112,11 +105,7 @@ app
 
   .get('/code-from/:memo_no',(req,res)=>{
     const memo_no=+req.params.memo_no
-    return IRCode.codeFrom(memo_no)
-      .then(result => {
-        console.log(result)
-        return res.send(result) 
-      })
+    return res.send(IRCode.codeFrom(memo_no))
   })
 
   .put('/addcode-from/:id',(req,res)=> {
