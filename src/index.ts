@@ -1,7 +1,7 @@
 import * as path from 'path'
 import * as express from 'express'
-import {execSync} from 'child_process'
-import {exec,spawn} from 'child-process-promise'
+import { execSync } from 'child_process'
+import { exec, spawn } from 'child-process-promise'
 import * as admin from 'firebase-admin'
 const serviceAccount = require('../config/pochi-pochi-firebase-adminsdk-eplb1-cbfc364ec8.json')
 const app = express()
@@ -10,127 +10,121 @@ admin.initializeApp({
   databaseURL: "https://pochi-pochi.firebaseio.com"
 })
 
-const db=admin.database()
-const codesRef=db.ref('codes')
-const actionRef=db.ref('action')
-let isInit=true
-class IRCodesObj{
-  data:Object
-  private static _instance:IRCodesObj
-  private constructor(){
+const db = admin.database()
+const codesRef = db.ref('codes')
+const actionRef = db.ref('action')
+let isInit = true
+class IRCodesObj {
+  data: Object
+  private static _instance: IRCodesObj
+  private constructor() {
     console.log('constructor was called!')
-    codesRef.on('value',snapshot=>{
-      this.data=snapshot.val()
+    codesRef.on('value', snapshot => {
+      this.data = snapshot.val()
       console.log(this.data)
     })
   }
-  public static get instance():IRCodesObj{
-    if(!this._instance){
-      this._instance=new IRCodesObj()
+  public static get instance(): IRCodesObj {
+    if (!this._instance) {
+      this._instance = new IRCodesObj()
     }
     return this._instance
   }
-  
-  find(phrase:string):string{
+
+  find(phrase: string): string {
     return this.data[phrase]
   }
-  
+
 }
 
-const codes=IRCodesObj.instance
+const codes = IRCodesObj.instance
 
 class IRCode {
-  code:string
-  phrase:string
-  
-  static codeFrom(memo_no:number):string{
+  code: string
+  phrase: string
+
+  static codeFrom(memo_no: number): string {
     return execSync(`python python/remocon.py r ${memo_no}`).toString()
   }
-  
-  constructor(_phrase:string,codeOrNum?:number|string){
-    this.phrase=_phrase
-    if(typeof codeOrNum==='number'){
-      this.code=IRCode.codeFrom(codeOrNum)
+
+  constructor(_phrase: string, codeOrNum?: number | string) {
+    this.phrase = _phrase
+    if (typeof codeOrNum === 'number') {
+      this.code = IRCode.codeFrom(codeOrNum)
     }
-    else if(typeof codeOrNum==='string'){
-      this.code=codeOrNum
+    else if (typeof codeOrNum === 'string') {
+      this.code = codeOrNum
     }
-    console.log('this.code:',this.code)
+    console.log('this.code:', this.code)
   }
-  
-  execCode(){
+
+  execCode() {
     console.log(`${this.code} is transed`)
     return exec(`python python/remocon.py t ${this.code}`)
-      .then(({stdout,stderr}:{stdout:string,stderr:string})=>
-        new Promise<string>((resolve,reject)=>{
-          resolve(stdout) 
+      .then(({ stdout, stderr }: { stdout: string, stderr: string }) =>
+        new Promise<string>((resolve, reject) => {
+          resolve(stdout)
         })
-    )
+      )
   }
-  static execCode(code:string){
+  static execCode(code: string) {
     console.log(`${code} is transed`)
     return exec(`python python/remocon.py t ${code}`)
-      .then(({stdout,stderr}:{stdout:string,stderr:string})=>
-        new Promise<string>((resolve,reject)=>{
-          resolve(stdout) 
+      .then(({ stdout, stderr }: { stdout: string, stderr: string }) =>
+        new Promise<string>((resolve, reject) => {
+          resolve(stdout)
         })
-    )
+      )
   }
-  get zipped(){
-    return {[this.phrase]:this.code}
+  get zipped() {
+    return { [this.phrase]: this.code }
   }
-  get rawDict(){
+  get rawDict() {
     return {
-      'phrase':this.phrase,
-      'code'  :this.code
+      'phrase': this.phrase,
+      'code': this.code
     }
   }
 }
 
 app
 
-  .get('/codes',(req,res)=>
+  .get('/codes', (req, res) =>
     res.json(codes.data)
   )
-  
-  .put('/addcode',(req,res)=>{
-    const {phrase,code}=req.query
-    const irCode=new IRCode(phrase,code)
+
+  .put('/addcode', (req, res) => {
+    const { phrase, code } = req.query
+    const irCode = new IRCode(phrase, code)
     return codesRef
       .update(irCode.zipped)
-      .then(()=>{
+      .then(() => {
         return res.json(irCode.zipped)
       })
   })
 
-  .get('/code-from/:memo_no',(req,res)=>{
-    const memo_no=+req.params.memo_no
+  .get('/code-from/:memo_no', (req, res) => {
+    const memo_no = +req.params.memo_no
     return res.send(IRCode.codeFrom(memo_no))
   })
 
-  .put('/addcode-from/:id',(req,res)=> {
-    const phrase=String(req.query.phrase),
-      memo_no=+req.params.id,
-      ir=new IRCode(phrase,memo_no)
-    console.log(phrase,memo_no)
+  .put('/addcode-from/:id', (req, res) => {
+    const phrase = String(req.query.phrase),
+      memo_no = +req.params.id,
+      ir = new IRCode(phrase, memo_no)
+    console.log(phrase, memo_no)
     return codesRef
       .update(ir.zipped)
-      .then(()=> res.send(ir.zipped))
+      .then(() => res.send(ir.zipped))
   })
-  .put('/request',(req,res)=>{
-    const action=req.query
-    let code:string
-    if(action===null){
-      return
+  .put('/request', (req, res) => {
+    const { phrase } = req.query
+    if (!phrase) {
+      return res.status(400)
     }
-    if('code' in action){
-      code=action['code']
-    }
-    else if('phrase' in action){
-      code=codes.find(action['phrase'])
-    }
-    IRCode.execCode(code)
-    return res.send(code)
+
+    return actionRef.update({ phrase })
+      .then(() => res.send(phrase))
   })
 // 
 // .post('/code',(req,res)=>{
@@ -140,26 +134,21 @@ app
 
 
 
-actionRef.on('value',snapshot=>{
-  if(isInit){
-    isInit=false
+actionRef.on('value', snapshot => {
+  if (isInit) {
+    isInit = false
     return
   }
-  
-  const action:Object=snapshot.val()
-  
-  if(action===null){
+
+  const { phrase } = snapshot.val()
+  if (!phrase) {
     return
   }
-  if('code' in action){
-    IRCode.execCode(action['code'])
-  }
-  else if('phrase' in action){
-    IRCode.execCode(codes.find(action['phrase']))
-  }
+
+  IRCode.execCode(codes.find(phrase))
 })
 
-const server = app.listen(3000, function(){
+const server = app.listen(3000, function() {
   console.log("Node.js is listening to PORT:" + server.address().port);
 })
 
