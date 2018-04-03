@@ -106,9 +106,10 @@ class IRCode {
 
 app
 
-  .get('/codes', (req, res) =>
-    res.json(codes.data.values())
-  )
+  .get('/codes', (req, res) =>{
+    console.log(codes.data)  
+    return res.json(codes.data.values())
+  })
 
   .put('/addcode', (req, res) => {
     const { phrase, code } = req.query
