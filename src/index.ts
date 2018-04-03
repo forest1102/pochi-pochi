@@ -3,6 +3,7 @@ import * as express from 'express'
 import { execSync } from 'child_process'
 import { exec, spawn } from 'child-process-promise'
 import * as admin from 'firebase-admin'
+import uuidv1 from 'uuid/v1'
 const serviceAccount = require('../config/pochi-pochi-firebase-adminsdk-eplb1-cbfc364ec8.json')
 const app = express()
 admin.initializeApp({
@@ -119,12 +120,14 @@ app
       .then(() => res.send(ir.zipped))
   })
   .put('/request', (req, res) => {
-    const { phrase } = req.query
+    const { phrase } = req.query,
+      id=uuidv1()
+    
     if (!phrase) {
       return res.status(400)
     }
 
-    return actionRef.push({ phrase })
+    return actionRef.update({phrase,id})
       .then(() => res.send(phrase))
   })
 // 
@@ -135,7 +138,7 @@ app
 
 
 
-actionRef.on('child_added', snapshot => {
+actionRef.on('value', snapshot => {
   if (isInit) {
     isInit = false
     return
@@ -145,7 +148,7 @@ actionRef.on('child_added', snapshot => {
   if (!phrase) {
     return
   }
-  
+
   IRCode.execCode(codes.find(phrase))
 })
 
