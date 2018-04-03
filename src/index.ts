@@ -108,7 +108,7 @@ app
 
   .get('/codes', (req, res) =>{
     console.log(codes.data)  
-    return res.json(codes.data.values())
+    return res.json(Array.from(codes.data))
   })
 
   .put('/addcode', (req, res) => {
