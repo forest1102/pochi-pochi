@@ -3,7 +3,7 @@ import * as express from 'express'
 import { execSync } from 'child_process'
 import { exec, spawn } from 'child-process-promise'
 import * as admin from 'firebase-admin'
-import uuidv1 from 'uuid/v1'
+import {v1 as uuidv1} from 'uuid'
 const serviceAccount = require('../config/pochi-pochi-firebase-adminsdk-eplb1-cbfc364ec8.json')
 const app = express()
 admin.initializeApp({
