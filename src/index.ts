@@ -10,10 +10,11 @@ admin.initializeApp({
   databaseURL: "https://pochi-pochi.firebaseio.com"
 })
 
-const db = admin.database()
-const codesRef = db.ref('codes')
+const db        = admin.database()
+const codesRef  = db.ref('codes')
 const actionRef = db.ref('action')
-let isInit = true
+let isInit      = true
+
 class IRCodesObj {
   data: Object
   private static _instance: IRCodesObj
@@ -123,7 +124,7 @@ app
       return res.status(400)
     }
 
-    return actionRef.update({ phrase })
+    return actionRef.push({ phrase })
       .then(() => res.send(phrase))
   })
 // 
@@ -134,7 +135,7 @@ app
 
 
 
-actionRef.on('value', snapshot => {
+actionRef.on('child_added', snapshot => {
   if (isInit) {
     isInit = false
     return
@@ -144,7 +145,7 @@ actionRef.on('value', snapshot => {
   if (!phrase) {
     return
   }
-
+  
   IRCode.execCode(codes.find(phrase))
 })
 
