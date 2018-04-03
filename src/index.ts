@@ -17,14 +17,22 @@ const actionRef = db.ref('action')
 let isInit      = true
 
 class IRCodesObj {
-  data: Object
+  data=new  Map<string,IRCode>()
   private static _instance: IRCodesObj
   private constructor() {
-    console.log('constructor was called!')
-    codesRef.on('value', snapshot => {
-      this.data = snapshot.val()
-      console.log(this.data)
-    })
+    const _this=this
+    codesRef
+      .on('child_added',(snapshot,prevKey) => {
+        _this.set(snapshot.key,snapshot.val())
+      })
+    codesRef  
+      .on('child_changed',snapshot=>{
+        _this.set(snapshot.key,snapshot.val())
+      })
+    codesRef
+      .on('child_removed',snapshot=>{
+        _this.data.delete(snapshot.key)
+      })
   }
   public static get instance(): IRCodesObj {
     if (!this._instance) {
@@ -32,9 +40,16 @@ class IRCodesObj {
     }
     return this._instance
   }
+  
+  set(phrase:string,code:string){
+    const ir=new IRCode(phrase,code)
+    
+    this.data.set(phrase,ir)
+    return {[phrase]:ir}
+  }
 
-  find(phrase: string): string {
-    return this.data[phrase]
+  find(phrase: string): IRCode{
+    return this.data.get(phrase)
   }
 
 }
@@ -57,7 +72,7 @@ class IRCode {
     else if (typeof codeOrNum === 'string') {
       this.code = codeOrNum
     }
-    console.log('this.code:', this.code)
+    console.log(this.phrase,':', this.code)
   }
 
   execCode() {
@@ -92,7 +107,7 @@ class IRCode {
 app
 
   .get('/codes', (req, res) =>
-    res.json(codes.data)
+    res.json(codes.data.values())
   )
 
   .put('/addcode', (req, res) => {
@@ -149,7 +164,13 @@ actionRef.on('value', snapshot => {
     return
   }
 
-  IRCode.execCode(codes.find(phrase))
+  const ir=codes.find(phrase)
+  
+  if(!ir){
+    return
+  }
+  
+  ir.execCode()  
 })
 
 const server = app.listen(3000, function() {
