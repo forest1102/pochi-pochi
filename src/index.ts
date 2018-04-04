@@ -7,6 +7,7 @@ import {v1 as uuidv1} from 'uuid'
 const serviceAccount = require('../config/serviceAccount.json')
 const app = express()
 admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://pochi-pochi.firebaseio.com"
 })
 
