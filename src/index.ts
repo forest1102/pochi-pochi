@@ -4,10 +4,9 @@ import { execSync } from 'child_process'
 import { exec, spawn } from 'child-process-promise'
 import * as admin from 'firebase-admin'
 import {v1 as uuidv1} from 'uuid'
-const serviceAccount = require('../config/pochi-pochi-firebase-adminsdk-eplb1-cbfc364ec8.json')
+const serviceAccount = require('../config/serviceAccount.json')
 const app = express()
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://pochi-pochi.firebaseio.com"
 })
 
