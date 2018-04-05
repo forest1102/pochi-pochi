@@ -4,7 +4,7 @@
     "target": "es2017",
     "sourceMap": true,
     "types" : ["node"],
-    "outDir": "./js" 
+    "outDir": "./lib" 
   },
   "exclude": [
     "node_modules"
